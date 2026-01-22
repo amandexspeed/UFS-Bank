@@ -7,14 +7,21 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import Utilitarios.Excecao;
 
-public class JanelaPrincipal extends JFrame{
+public class JanelaPrincipal extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel conteudoPainel;
     private CardLayout cardLayout;
 
-    public JanelaPrincipal() throws Excecao {
-        setTitle("Banco");
+    // Construtor  modo de operação
+    public JanelaPrincipal(boolean isServer) throws Excecao {
+        
+        if (isServer) {
+            setTitle("UFS-Bank [MODO COORDENADOR CENTRAL]");
+        } else {
+            setTitle("UFS-Bank [TERMINAL CLIENTE]");
+        }
+        
         setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -23,6 +30,7 @@ public class JanelaPrincipal extends JFrame{
         conteudoPainel.setLayout(cardLayout);
         setContentPane(conteudoPainel);
         
+        // Instanciação das telas
         TelaPrincipal telaPrincipal = new TelaPrincipal();
         TelaCadastro telaCadastro = new TelaCadastro();
         TelaTabela telaTabela = new TelaTabela();
@@ -32,6 +40,7 @@ public class JanelaPrincipal extends JFrame{
         TelaAtendimento telaAtendimento = new TelaAtendimento();
         TelaCadastrarCliente telaCadastrarCliente = new TelaCadastrarCliente();
         
+        // Adicionando ao CardLayout
         conteudoPainel.add(telaPrincipal, "telaPrincipal");
         conteudoPainel.add(telaCadastro, "telaCadastro");
         conteudoPainel.add(telaTabela, "telaTabela");
@@ -41,6 +50,8 @@ public class JanelaPrincipal extends JFrame{
         conteudoPainel.add(telaAtendimento,"telaAtendimento");
         conteudoPainel.add(telaCadastrarCliente, "telaCadastrarCliente");
         
+        // --- LISTENERS DE NAVEGAÇÃO ---
+
         telaPrincipal.getBotaoRH().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(conteudoPainel, "telaRH");
@@ -49,6 +60,8 @@ public class JanelaPrincipal extends JFrame{
         
         telaPrincipal.getBotaoCaixa().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                // Ao entrar na tela de caixa, o cliente busca funcionários via rede
+                TelaCaixa.preencherTabelasRemotamente();
                 cardLayout.show(conteudoPainel, "telaCaixa");
             }
         });
@@ -115,6 +128,8 @@ public class JanelaPrincipal extends JFrame{
 
         telaCaixa.getBotaoEntrar().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                // Atualiza o nome do funcionário na tela de atendimento antes de mudar
+                TelaAtendimento.mudarTexto();
                 cardLayout.show(conteudoPainel, "telaAtendimento");
             }
         });
@@ -124,9 +139,6 @@ public class JanelaPrincipal extends JFrame{
                 cardLayout.show(conteudoPainel, "telaPrincipal");
             }
         });
-
-
-
     }
 
     public JPanel getConteudoPainel() {
@@ -136,7 +148,4 @@ public class JanelaPrincipal extends JFrame{
     public CardLayout getCardLayout() {
         return cardLayout;
     }
-
 }
-
-

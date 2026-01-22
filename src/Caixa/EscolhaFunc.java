@@ -1,43 +1,44 @@
 package Caixa;
 
 import javax.swing.JOptionPane;
-
 import Modelos.ModeloLista.*;
 import Modelos.ModelosPessoa.*;
 import RH.GestaoFuncionarios;
 
 public class EscolhaFunc {
-	
-	public static Funcionario funcEsc;
+    
+    public static Funcionario funcionarioEscolhido; 
     public static String nome = " ";
-	
-	public static void escolherFuncionario(int matricula) {
-		
-		No<Lista> listaDeps = GestaoFuncionarios.ListaDepartamento.listar();
-		
-        while(listaDeps != null) {
+    
+    public static void escolherFuncionario(int matricula) {
+        
+        No<Lista> listaDeps = GestaoFuncionarios.ListaDepartamento.listar();
+        boolean encontrado = false;
 
+        while(listaDeps != null) {
+            // Busca a matrícula dentro da sublista do departamento (Multilista)
             No listaFunc = listaDeps.getAtual().buscar(matricula);
+            
             if(listaFunc != null) {
                 if(listaFunc.getAtual() instanceof GerenteNegocios){
-                    funcEsc =  (GerenteNegocios) listaFunc.getAtual();
-                    
-                }else if(listaFunc.getAtual() instanceof Caixa){
-                    funcEsc = (Caixa) listaFunc.getAtual();
-                    
+                    funcionarioEscolhido = (GerenteNegocios) listaFunc.getAtual();
+                } else if(listaFunc.getAtual() instanceof Caixa){
+                    funcionarioEscolhido = (Caixa) listaFunc.getAtual();
                 }
-                nome = funcEsc.getNome();
-                break;
-
+                
+                if (funcionarioEscolhido != null) {
+                    nome = funcionarioEscolhido.getNome();
+                    encontrado = true;
+                    break;
+                }
             }
-
             listaDeps = listaDeps.getProximo();
-
         }
-        if(listaDeps==null)
-            JOptionPane.showMessageDialog(null,"Não foi encontrada a matrícula digitada");
-        
-	}
-	
 
+        if(!encontrado) {
+            JOptionPane.showMessageDialog(null, "Não foi encontrada a matrícula digitada no sistema.");
+        } else {
+            System.out.println("[LOG] Funcionário logado no terminal: " + nome);
+        }
+    }
 }

@@ -114,7 +114,7 @@ public class GestaoFuncionarios {
         try {
             TelaTabela.preencherTabelas();
             TelaExcluir.preencherTabelas();
-            TelaCaixa.preencherTabelas();
+            TelaCaixa.preencherTabelasRemotamente();
         } catch (Excecao e) {
             e.printStackTrace();
         }

@@ -6,7 +6,7 @@ import RH.GestaoFuncionarios;
 import Utilitarios.Excecao;
 import Utilitarios.RedeCoordenador;
 
-public class Main {
+public class MainCliente {
 
     public static void main(String[] args) {
 
@@ -14,7 +14,7 @@ public class Main {
 
         try {
            
-            JanelaPrincipal telaPrincipal = new JanelaPrincipal();
+            JanelaPrincipal telaPrincipal = new JanelaPrincipal(false);
             telaPrincipal.setVisible(true);
 
             // Se for o servidor, inicia a escuta UDP em uma Thread separada

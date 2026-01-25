@@ -46,12 +46,13 @@ public class Fila<T> {
 		this.tamanho++;
 	}
 
-	public void removerInicio() {
+	public T removerInicio() {
 		No<T> aux = this.inicio;
 		this.inicio = this.inicio.proximo;
 
 		aux.remover();
 		this.tamanho--;
+		return aux.atual;
 	}
 
 	public No<T> buscar(T Valor) {

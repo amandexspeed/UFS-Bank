@@ -2,31 +2,33 @@ package GUI;
 
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-
-import Modelos.ModelosPessoa.*;
-import Recepcao.GerenciarFila;
-import Utilitarios.Excecao;
-
-import javax.swing.JButton;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+
+// Importações removidas: Recepcao.GerenciarFila (Não acessamos mais a fila localmente)
+import Modelos.ModelosPessoa.Cliente;
+import Utilitarios.Excecao;
 
 public class TelaCadastrarCliente extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	private JTextField campoNome;
-	private JTextField campoCPF;
-	private JButton botaoVoltar;
-	private Boolean prioridade = false;
+    private static final long serialVersionUID = 1L;
+    private JTextField campoNome;
+    private JTextField campoCPF;
+    private JButton botaoVoltar;
+    private Boolean prioridade = false;
 
     public TelaCadastrarCliente() {
         setSize(1280, 720);
@@ -69,7 +71,7 @@ public class TelaCadastrarCliente extends JPanel {
         campoCPF.addKeyListener(new KeyAdapter() {     
             public void keyTyped(KeyEvent e) {
                 if (campoCPF.getText().length() >= 11) {
-                    e.consume(); // Consumir o evento para impedir que mais caracteres sejam digitados
+                    e.consume(); 
                 }
             }
         });
@@ -98,55 +100,72 @@ public class TelaCadastrarCliente extends JPanel {
         add(botaoNao);
         
         botaoSim.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		prioridade = true;
+            public void actionPerformed(ActionEvent e) {
+                prioridade = true;
                 botaoSim.setEnabled(false);
                 botaoNao.setEnabled(true);
-        	}
+            }
         });
         
         botaoNao.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		prioridade = false;
+            public void actionPerformed(ActionEvent e) {
+                prioridade = false;
                 botaoSim.setEnabled(true);
                 botaoNao.setEnabled(false);
-        	}
+            }
         });
 
         botaoCadastrar.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-
-        		String escolha = (String) comboBox.getSelectedItem();
-				
+            public void actionPerformed(ActionEvent e) {
+                String escolha = (String) comboBox.getSelectedItem();
+                
                 try {
+                    // Criamos o objeto cliente apenas para validação de dados
                     Cliente cliente = new Cliente(campoNome.getText(), campoCPF.getText(), prioridade);
-                    if (escolha.equals("Caixa")) {	            
-                        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso! ");
-                        if(prioridade) {
-                            GerenciarFila.filaPreferencial.inserirFim(cliente);
-                        } else {
-                            GerenciarFila.filaNormal.inserirFim(cliente);
-                            }
-                    } else {     
-                            
-                        JOptionPane.showMessageDialog(null, "Cliente VIP cadastrado com sucesso! ");
-                        GerenciarFila.filaVIP.inserirFim(cliente);
-                    }
+                    
+                    
+                    enviarSolicitacaoRede(campoNome.getText(), campoCPF.getText(), prioridade, escolha);
+                    
+                    JOptionPane.showMessageDialog(null, "Solicitação de cadastro enviada ao Coordenador!");
+
                 } catch (Excecao e1) {
-                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erro nos dados: " + e1.getMessage());
                 }
-				
+                
+                // Limpeza dos campos
                 campoNome.setText("");
                 campoCPF.setText("");
                 botaoSim.setEnabled(true);
                 botaoNao.setEnabled(true);
-						
-        	}
+            }
         });
+    }
 
+    /**
+     * Método responsável por enviar os dados via UDP Broadcast para o Coordenador Central.
+     */
+    private void enviarSolicitacaoRede(String nome, String cpf, boolean ehPrioridade, String setor) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setBroadcast(true);
+
+            
+            String mensagem = String.format("ADD_CLIENTE;%s;%s;%b;%s", nome, cpf, ehPrioridade, setor);
+            byte[] buffer = mensagem.getBytes();
+
+            // Regra 3: Broadcast para a porta 5000 (Onde o Coordenador estará ouvindo)
+            InetAddress address = InetAddress.getByName("255.255.255.255");
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 5000);
+            
+            socket.send(packet);
+            System.out.println("Pacote UDP enviado: " + mensagem);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao conectar com a rede.");
+        }
     }
     
     public JButton getBotaoVoltar() {
-    	return botaoVoltar;
+        return botaoVoltar;
     }
 }

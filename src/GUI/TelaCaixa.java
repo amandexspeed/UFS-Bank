@@ -2,34 +2,33 @@ package GUI;
 
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import javax.swing.JTextField;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Vector;
 
 import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import Caixa.EscolhaFunc;
-import Modelos.ModeloLista.No;
-import Modelos.ModelosPessoa.Caixa;
-import Modelos.ModelosPessoa.GerenteNegocios;
-import RH.GestaoFuncionarios;
 import Utilitarios.Excecao;
-
-import java.awt.GridLayout;
 
 public class TelaCaixa extends JPanel {
 
-	private static final long serialVersionUID = 1L;
-	private JTextField campoNome;
-	private JButton botaoVoltar;
+    private static final long serialVersionUID = 1L;
+    private JTextField campoNome;
+    private JButton botaoVoltar;
     private JButton botaoEntrar;
-	private static JTable caixaTable;
+    private static JTable caixaTable;
     private static JTable gerenteTable;
     
     public TelaCaixa() {
@@ -59,10 +58,14 @@ public class TelaCaixa extends JPanel {
         
         botaoEntrar = new JButton("Entrar");
         botaoEntrar.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		EscolhaFunc.escolherFuncionario(Integer.parseInt(campoNome.getText()));
-                TelaAtendimento.mudarTexto();
-        	}
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    EscolhaFunc.escolherFuncionario(Integer.parseInt(campoNome.getText()));
+                    TelaAtendimento.mudarTexto();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Digite uma matrícula válida.");
+                }
+            }
         });
         botaoEntrar.setBounds(527, 588, 124, 57);
         add(botaoEntrar);
@@ -73,7 +76,6 @@ public class TelaCaixa extends JPanel {
         add(lblTextoInformativo);
         
         JPanel tabelaPanel = new JPanel(new GridLayout(1, 2));
-        tabelaPanel.removeAll();
         
         caixaTable = new JTable();
         gerenteTable = new JTable();
@@ -81,57 +83,58 @@ public class TelaCaixa extends JPanel {
         JScrollPane caixaScrollPane = new JScrollPane(caixaTable);
         JScrollPane gerenteScrollPane = new JScrollPane(gerenteTable); 
         
-  
-        try {
-			preencherTabelas();
-		} catch (Excecao e1) {
-			e1.printStackTrace();
-		}
+        preencherTabelasRemotamente();
         
         tabelaPanel.setBounds(10, 113, 1260, 322);
-        
         tabelaPanel.add(caixaScrollPane);
         tabelaPanel.add(gerenteScrollPane);
         add(tabelaPanel);
-        tabelaPanel.setLayout(new GridLayout(1, 0, 0, 0));
     }
     
-    public JButton getBotaoVoltar() {
-    	return botaoVoltar;
+    // Regras 1 e 3: Obtém a lista de funcionários do Coordenador Central via UDP
+    public static void preencherTabelasRemotamente() {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setSoTimeout(2000); // Tempo limite de resposta
+            socket.setBroadcast(true);
+
+            String pedido = "LISTAR_FUNCIONARIOS";
+            byte[] bufferEnvio = pedido.getBytes();
+            InetAddress ip = InetAddress.getByName("255.255.255.255");
+            DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, 5000);
+            socket.send(pacoteEnvio);
+
+            byte[] bufferReceber = new byte[4096];
+            DatagramPacket pacoteReceber = new DatagramPacket(bufferReceber, bufferReceber.length);
+            socket.receive(pacoteReceber);
+
+            String resposta = new String(pacoteReceber.getData(), 0, pacoteReceber.getLength());
+            atualizarUI(resposta);
+
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar funcionários na rede: " + e.getMessage());
+        }
     }
 
-    public JButton getBotaoEntrar(){
-        return botaoEntrar;
+    private static void atualizarUI(String dados) {
+        DefaultTableModel caixaModel = new DefaultTableModel(new Object[]{"Nome", "CPF", "Matrícula"}, 0);
+        DefaultTableModel gerenteModel = new DefaultTableModel(new Object[]{"Nome", "CPF", "Matrícula"}, 0);
+
+        String[] linhas = dados.split("\n");
+        for (String linha : linhas) {
+            String[] colunas = linha.split(";");
+            if (colunas.length < 4) continue;
+
+            Object[] row = {colunas[1], colunas[2], colunas[3]};
+            if (colunas[0].equals("CAIXA")) {
+                caixaModel.addRow(row);
+            } else if (colunas[0].equals("GERENTE")) {
+                gerenteModel.addRow(row);
+            }
+        }
+        caixaTable.setModel(caixaModel);
+        gerenteTable.setModel(gerenteModel);
     }
-    public static void preencherTabelas() throws Excecao {
 
-		caixaTable.removeAll();
-		gerenteTable.removeAll();
-
-		DefaultTableModel caixaModel = new DefaultTableModel();
-		DefaultTableModel gerenteModel = new DefaultTableModel();
-
-		caixaModel.addColumn("Nome");
-		caixaModel.addColumn("CPF");
-		caixaModel.addColumn("Matrícula");
-
-		gerenteModel.addColumn("Nome");
-		gerenteModel.addColumn("CPF");
-		gerenteModel.addColumn("Matrícula");
-
-		No<Caixa> caixa = GestaoFuncionarios.ListaCaixa.listar();
-		while (caixa != null) {
-			caixaModel.addRow(new Object[]{caixa.getAtual().getNome(), caixa.getAtual().getCPF(), caixa.getAtual().getMatricula()});
-			caixa = caixa.getProximo();
-		}
-
-		No<GerenteNegocios> gerente = GestaoFuncionarios.ListaGerente.listar();
-		while (gerente != null) {
-			gerenteModel.addRow(new Object[]{gerente.getAtual().getNome(), gerente.getAtual().getCPF(), gerente.getAtual().getMatricula()});
-			gerente = gerente.getProximo();
-		}
-
-		caixaTable.setModel(caixaModel);
-		gerenteTable.setModel(gerenteModel);
-	}
+    public JButton getBotaoVoltar() { return botaoVoltar; }
+    public JButton getBotaoEntrar() { return botaoEntrar; }
 }

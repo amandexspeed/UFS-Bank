@@ -1,3 +1,9 @@
+
+
+// ============================================================================
+// CÓDIGO JanelaPrincipal ATUALIZADA
+// ============================================================================
+
 package GUI;
 
 import java.awt.CardLayout;
@@ -13,7 +19,6 @@ public class JanelaPrincipal extends JFrame {
     private JPanel conteudoPainel;
     private CardLayout cardLayout;
 
-    // Construtor  modo de operação
     public JanelaPrincipal(boolean isServer) throws Excecao {
         
         if (isServer) {
@@ -30,7 +35,7 @@ public class JanelaPrincipal extends JFrame {
         conteudoPainel.setLayout(cardLayout);
         setContentPane(conteudoPainel);
         
-        // Instanciação das telas
+        // === INSTANCIAÇÃO DAS TELAS ===
         TelaPrincipal telaPrincipal = new TelaPrincipal();
         TelaCadastro telaCadastro = new TelaCadastro();
         TelaTabela telaTabela = new TelaTabela();
@@ -39,8 +44,9 @@ public class JanelaPrincipal extends JFrame {
         TelaExcluir telaExcluir = new TelaExcluir();
         TelaAtendimento telaAtendimento = new TelaAtendimento();
         TelaCadastrarCliente telaCadastrarCliente = new TelaCadastrarCliente();
+        TelaVisualizarFilas telaVisualizarFilas = new TelaVisualizarFilas(); // NOVA TELA
         
-        // Adicionando ao CardLayout
+        // === ADICIONANDO AO CARDLAYOUT ===
         conteudoPainel.add(telaPrincipal, "telaPrincipal");
         conteudoPainel.add(telaCadastro, "telaCadastro");
         conteudoPainel.add(telaTabela, "telaTabela");
@@ -49,9 +55,10 @@ public class JanelaPrincipal extends JFrame {
         conteudoPainel.add(telaExcluir,"telaExcluir");
         conteudoPainel.add(telaAtendimento,"telaAtendimento");
         conteudoPainel.add(telaCadastrarCliente, "telaCadastrarCliente");
+        conteudoPainel.add(telaVisualizarFilas, "telaVisualizarFilas"); // NOVA TELA
         
-        // --- LISTENERS DE NAVEGAÇÃO ---
-
+        // === LISTENERS DE NAVEGAÇÃO EXISTENTES ===
+        
         telaPrincipal.getBotaoRH().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(conteudoPainel, "telaRH");
@@ -60,7 +67,6 @@ public class JanelaPrincipal extends JFrame {
         
         telaPrincipal.getBotaoCaixa().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Ao entrar na tela de caixa, o cliente busca funcionários via rede
                 TelaCaixa.preencherTabelasRemotamente();
                 cardLayout.show(conteudoPainel, "telaCaixa");
             }
@@ -128,7 +134,6 @@ public class JanelaPrincipal extends JFrame {
 
         telaCaixa.getBotaoEntrar().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Atualiza o nome do funcionário na tela de atendimento antes de mudar
                 TelaAtendimento.mudarTexto();
                 cardLayout.show(conteudoPainel, "telaAtendimento");
             }
@@ -137,6 +142,23 @@ public class JanelaPrincipal extends JFrame {
         telaCadastrarCliente.getBotaoVoltar().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(conteudoPainel, "telaPrincipal");
+            }
+        });
+        
+        // === NOVOS LISTENERS PARA A TELA DE VISUALIZAR FILAS ===
+        
+        // Botão "Visualizar Filas" na tela de cadastro de clientes
+        telaCadastrarCliente.getBotaoVisualizarFilas().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                TelaVisualizarFilas.atualizarFilas(); // Atualiza antes de mostrar
+                cardLayout.show(conteudoPainel, "telaVisualizarFilas");
+            }
+        });
+        
+        // Botão "Voltar" na tela de visualizar filas
+        telaVisualizarFilas.getBotaoVoltar().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(conteudoPainel, "telaCadastrarCliente");
             }
         });
     }

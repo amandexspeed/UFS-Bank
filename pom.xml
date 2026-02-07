@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>UFS_BANK</groupId>
+  <artifactId>UFS_BANK</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>UFS_BANK</name>
+  
+  <dependencies>
+	    <dependency>
+	        <groupId>org.hibernate.orm</groupId>
+	        <artifactId>hibernate-core</artifactId>
+	        <version>6.4.4.Final</version>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>com.mysql</groupId>
+	        <artifactId>mysql-connector-j</artifactId>
+	        <version>8.3.0</version>
+	    </dependency>
+	    
+	    <dependency>
+	        <groupId>org.projectlombok</groupId>
+	        <artifactId>lombok</artifactId>
+	        <version>1.18.30</version>
+	        <scope>provided</scope>
+	    </dependency>
+
+      <dependency>
+        <groupId>io.github.cdimascio</groupId>
+        <artifactId>java-dotenv</artifactId>
+        <version>5.2.2</version>
+    </dependency>
+
+	</dependencies>
+  
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.3.0</version>
+          <executions>
+              <execution>
+                  <id>server-jar</id>
+                  <goals><goal>jar</goal></goals>
+                  <phase>package</phase>
+                  <configuration>
+                      <classifier>server</classifier>
+                      <archive>
+                          <manifest>
+                              <mainClass>Modelos.Main.MainServer</mainClass>
+                          </manifest>
+                      </archive>
+                  </configuration>
+              </execution>
+              <execution>
+                  <id>client-jar</id>
+                  <goals><goal>jar</goal></goals>
+                  <phase>package</phase>
+                  <configuration>
+                      <classifier>client</classifier>
+                      <archive>
+                          <manifest>
+                              <mainClass>Modelos.Main.MainCliente</mainClass>
+                          </manifest>
+                      </archive>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,39 @@
+name: Java CI com Maven e Artefatos
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Baixar Código
+      uses: actions/checkout@v4
+    
+    - name: Configurar JDK 18
+      uses: actions/setup-java@v4
+      with:
+        java-version: '18'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Compilar e Gerar JAR
+      # Aqui o GitHub usa os seus segredos do Aiven apenas para validar o build
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: mvn -B package --file pom.xml
+
+    - name: Disponibilizar Executáveis para Download
+      uses: actions/upload-artifact@v4
+      with:
+        name: UFS-Bank-Pacote-Completo
+        # O caminho abaixo pega todos os JARs que o Maven gerou no target
+        path: target/*.jar

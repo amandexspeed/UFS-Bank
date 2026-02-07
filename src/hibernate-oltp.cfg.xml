@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+    
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="show_sql">true</property>
+        <property name="format_sql">true</property>
+
+		<mapping class="Modelos.ModelosBanco.Cliente.Cliente"/>
+		<mapping class="Modelos.ModelosBanco.Cliente.Conta"/>
+		
+		<mapping class="Modelos.ModelosBanco.Financeiro.FormaPagamento"/>
+		<mapping class="Modelos.ModelosBanco.Financeiro.FormaPagamentoUtilizada"/>
+		<mapping class="Modelos.ModelosBanco.Financeiro.RegistroFinanceiro"/>
+
+		<mapping class="Modelos.ModelosBanco.Localizacao.Cidade"/>
+		<mapping class="Modelos.ModelosBanco.Localizacao.Endereco"/>
+		<mapping class="Modelos.ModelosBanco.Localizacao.Estado"/>
+        
+    </session-factory>
+</hibernate-configuration>                                              

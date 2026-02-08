@@ -23,6 +23,8 @@ import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import Utilitarios.RedeCliente;
+
 import java.awt.Dimension;
 
 /**
@@ -243,7 +245,7 @@ public class TelaVisualizarFilas extends JPanel {
     private static void buscarEstatisticas(DatagramSocket socket, InetAddress ip) throws Exception {
         String comando = "ESTATISTICAS_FILAS";
         byte[] bufferEnvio = comando.getBytes("UTF-8");
-        DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, 5000);
+        DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, RedeCliente.getServidorPorta());
         socket.send(pacoteEnvio);
 
         byte[] bufferReceber = new byte[1024];
@@ -275,7 +277,7 @@ public class TelaVisualizarFilas extends JPanel {
         List<ClienteInfo> clientes = new ArrayList<>();
 
         byte[] bufferEnvio = comando.getBytes("UTF-8");
-        DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, 5000);
+        DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, RedeCliente.getServidorPorta());
         socket.send(pacoteEnvio);
 
         byte[] bufferReceber = new byte[8192];
@@ -353,7 +355,7 @@ public class TelaVisualizarFilas extends JPanel {
     }
 
     private void iniciarAutoAtualizacao() {
-        timer = new Timer(5000, new ActionListener() {
+        timer = new Timer(RedeCliente.getServidorPorta(), new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 atualizarFilas();
             }

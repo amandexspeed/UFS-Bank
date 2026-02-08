@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import Caixa.EscolhaFunc;
 import Modelos.ModelosPessoa.Caixa;
 import Modelos.ModelosPessoa.GerenteNegocios;
+import Utilitarios.RedeCliente;
 
 public class TelaAtendimento extends JPanel {
 
@@ -180,7 +181,7 @@ public class TelaAtendimento extends JPanel {
             byte[] bufferEnvio = mensagem.getBytes("UTF-8");
 
             InetAddress ip = InetAddress.getByName("255.255.255.255");
-            DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, 5000);
+            DatagramPacket pacoteEnvio = new DatagramPacket(bufferEnvio, bufferEnvio.length, ip, RedeCliente.getServidorPorta());
             socket.send(pacoteEnvio);
 
             System.out.println("[LOG] Solicitação enviada: " + mensagem);

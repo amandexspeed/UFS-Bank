@@ -11,6 +11,9 @@ public class MainCliente {
     public static void main(String[] args) {
 
         GestaoFuncionarios.iniciarLista();
+        if (!Utilitarios.RedeCliente.buscarServidor()) {
+            return; // Se não encontrar o servidor, encerra o cliente
+        }
 
         try {
            

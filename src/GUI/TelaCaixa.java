@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import Caixa.EscolhaFunc;
+import Utilitarios.RedeCliente;
 
 public class TelaCaixa extends JPanel {
 
@@ -224,7 +225,7 @@ public class TelaCaixa extends JPanel {
             // ===== BUSCAR CAIXAS =====
             String pedidoCaixas = "LISTAR_FUNCIONARIOS";
             byte[] bufferEnvioCaixas = pedidoCaixas.getBytes("UTF-8");
-            DatagramPacket pacoteEnvioCaixas = new DatagramPacket(bufferEnvioCaixas, bufferEnvioCaixas.length, ip, 5000);
+            DatagramPacket pacoteEnvioCaixas = new DatagramPacket(bufferEnvioCaixas, bufferEnvioCaixas.length, ip, RedeCliente.getServidorPorta());
             socket.send(pacoteEnvioCaixas);
 
             byte[] bufferReceberCaixas = new byte[8192];
@@ -247,7 +248,7 @@ public class TelaCaixa extends JPanel {
             // ===== BUSCAR GERENTES =====
             String pedidoGerentes = "LISTAR_GERENTES";
             byte[] bufferEnvioGerentes = pedidoGerentes.getBytes("UTF-8");
-            DatagramPacket pacoteEnvioGerentes = new DatagramPacket(bufferEnvioGerentes, bufferEnvioGerentes.length, ip, 5000);
+            DatagramPacket pacoteEnvioGerentes = new DatagramPacket(bufferEnvioGerentes, bufferEnvioGerentes.length, ip, RedeCliente.getServidorPorta());
             socket.send(pacoteEnvioGerentes);
 
             byte[] bufferReceberGerentes = new byte[8192];

@@ -24,7 +24,7 @@
 - **Dotenv** para gestão segura de credenciais.
 
 
- Você pode baixar o zip da release a vontade para aproveitar nossa ferramenta!<\br>
+ Você pode baixar o zip da release a vontade para aproveitar nossa ferramenta!</br>
  Para o cliente visual funcionar corretamente, você precisa ter uma instância na sua rede do servidor(programa de console).</br>
  Mas caso você não se sinta confortável em usar prompt de comandado para rodar o jar do servidor de nosso projeto, não tem problema! o .bat foi criado justamente para você!</br>
  Ele inicia uma instância do servidor e outra do cliente apenas clicando! (Não tem pegadinhas nem capturamos nada kkkkkkkkkkkkkkkk apenas te ajudamos!)</br>

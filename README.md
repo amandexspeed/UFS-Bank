@@ -6,13 +6,13 @@
  Simula diferentes diferentes setores de um banco, como RH, caixa e recepção.
  Usamos o conceito de multilista e fila para a consistência interna dos dados e arquivos para salvar os dados dos funcionários para uso posterior.
 
- # ⌛ EM DESENVOLVIMENTO
+ # ⌛ Em desenvolvimento
 
  - Processo de ETL para analisar saúde do banco e pontos de melhoria
  - Processo para atender cliente realmente implementado (Não apenas chamar o cliente)
  - BI
 
-# ✨ COISAS QUE VOCÊ PODE TESTAR!
+# ✨ Coisas que você pode testar!
  - Comunicação em rede local entre diferentes instâncias
   
 # 🛠️ Tecnologias Utilizadas
@@ -24,4 +24,7 @@
 - **Dotenv** para gestão segura de credenciais.
 
 
- Você pode baixar o jar a vontade para aproveitar nossa ferramenta!
+ Você pode baixar o zip da release a vontade para aproveitar nossa ferramenta!
+ Para o cliente visual funcionar corretamente, você precisa ter uma instância na sua rede do servidor(programa de console). 
+ Mas caso você não se sinta confortável em usar prompt de comandado para rodar o jar do servidor de nosso projeto, não tem problema! o .bat foi criado justamente para você! 
+ Ele inicia uma instância do servidor e outra do cliente apenas clicando! (Não tem pegadinhas nem capturamos nada kkkkkkkkkkkkkkkk apenas te ajudamos!)

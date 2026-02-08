@@ -173,7 +173,7 @@ public class TelaAtendimento extends JPanel {
         }
 
         try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setSoTimeout(2000);
+            socket.setSoTimeout(5000);
             socket.setBroadcast(true);
 
             String tipoFuncionario = obterTipoFuncionario();

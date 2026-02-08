@@ -205,7 +205,7 @@ public class TelaVisualizarFilas extends JPanel {
      */
     public static void atualizarFilas() {
         try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setSoTimeout(2000);
+            socket.setSoTimeout(5000);
             socket.setBroadcast(true);
             InetAddress ip = InetAddress.getByName("255.255.255.255");
 

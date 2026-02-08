@@ -15,7 +15,7 @@ public class RedeCliente {
     public static boolean buscarServidor() {
 
         try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setSoTimeout(2000);
+            socket.setSoTimeout(5000);
             socket.setBroadcast(true);
             
             String resposta = tentarAcharServidor(socket);

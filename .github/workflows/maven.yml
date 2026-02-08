@@ -49,5 +49,6 @@ jobs:
         files: |
           target/*-server.jar
           target/*-client.jar
+          executa_facil.bat
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

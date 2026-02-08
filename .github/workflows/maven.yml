@@ -37,3 +37,18 @@ jobs:
         name: UFS-Bank-Pacote-Completo
         # O caminho abaixo pega todos os JARs que o Maven gerou no target
         path: target/*.jar
+
+    - name: Criar Release e Upload dos JARs
+      uses: softprops/action-gh-release@v1
+      if: github.ref == 'refs/heads/main'
+      with:
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        draft: false
+        prerelease: false
+        files: |
+          target/*-server.jar
+          target/*-client.jar
+          executa_facil.bat
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

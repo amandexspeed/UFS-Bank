@@ -16,17 +16,19 @@ import Recepcao.GerenciarFila;
 
 public class RedeCoordenador {
     private DatagramSocket socket;
-    private final int PORTA = 5000;
+    private int porta;
     private int contPreferencial = 0;
     private final ReentrantLock lock = new ReentrantLock();
     private volatile boolean rodando = true;
+     private final static int[] portasTentativas = new int[]{10000, 55555, 49876, 61234, 58008}; // Portas para tentar 
 
     public void iniciar() throws Exception {
         try {
-            socket = new DatagramSocket(PORTA);
-            socket.setSoTimeout(1000);
+            socket = abrirServidor();
+            porta = socket.getLocalPort();
+            socket.setSoTimeout(10000);
             byte[] buffer = new byte[8192];
-            System.out.println(">>> COORDENADOR UFS-BANK INICIADO NA PORTA " + PORTA + " <<<");
+            System.out.println(">>> COORDENADOR UFS-BANK INICIADO NA PORTA " + porta + " <<<");
 
             while (rodando) {
                 try {
@@ -53,6 +55,19 @@ public class RedeCoordenador {
                 System.out.println(">>> COORDENADOR ENCERRADO <<<");
             }
         }
+    }
+
+    private DatagramSocket abrirServidor() throws Exception {
+        for (int p : portasTentativas) {
+            try {
+                DatagramSocket s = new DatagramSocket(p);
+                System.out.println("[COORDENADOR] Servidor iniciado na porta " + p);
+                return s;
+            } catch (Exception e) {
+                System.err.println("[COORDENADOR] Porta " + p + " indisponível, tentando próxima...");
+            }
+        }
+        throw new Exception("Não foi possível iniciar o servidor em nenhuma das portas tentadas.");
     }
 
     private void processarMensagem(String mensagem, DatagramPacket pacote) {
@@ -117,6 +132,11 @@ public class RedeCoordenador {
 
                 case "ESTATISTICAS_FILAS":
                     responder(gerarEstatisticasFilas(), pacote.getAddress(), pacote.getPort());
+                    break;
+
+                case "ACHAR_SERVIDOR":
+                    responder("SERVIDOR_AQUI:" + InetAddress.getLocalHost().getHostAddress() + ":" + porta,
+                            pacote.getAddress(), pacote.getPort());
                     break;
 
                 default:

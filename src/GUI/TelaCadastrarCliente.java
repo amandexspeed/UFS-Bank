@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 
 import Modelos.ModelosPessoa.Cliente;
 import Utilitarios.Excecao;
+import Utilitarios.RedeCliente;
 
 public class TelaCadastrarCliente extends JPanel {
 
@@ -271,7 +272,7 @@ public class TelaCadastrarCliente extends JPanel {
             byte[] buffer = mensagem.getBytes("UTF-8");
 
             InetAddress address = InetAddress.getByName("255.255.255.255");
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 5000);
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, RedeCliente.getServidorPorta());
             
             socket.send(packet);
             System.out.println("[LOG] Pacote UDP enviado: " + mensagem);

@@ -3,6 +3,7 @@ package GUI;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.DatagramPacket;
@@ -22,6 +23,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import Caixa.EscolhaFunc;
+import Modelos.ModeloLista.Lista;
+import Modelos.ModelosPessoa.Caixa;
+import Modelos.ModelosPessoa.GerenteNegocios;
+import RH.GestaoFuncionarios;
+import Utilitarios.Excecao;
 import Utilitarios.RedeCliente;
 
 public class TelaCaixa extends JPanel {
@@ -216,8 +222,12 @@ public class TelaCaixa extends JPanel {
                 return false;
             }
         };
-        
+
         try (DatagramSocket socket = new DatagramSocket()) {
+
+            Lista<Caixa> caixas = new Lista<Caixa>();
+            Lista<GerenteNegocios> gerentes = new Lista<GerenteNegocios>();
+
             socket.setSoTimeout(5000);
             socket.setBroadcast(true);
             InetAddress ip = InetAddress.getByName("255.255.255.255");
@@ -241,6 +251,7 @@ public class TelaCaixa extends JPanel {
                     String[] colunas = linha.split(";");
                     if (colunas.length >= 4 && colunas[0].equals("CAIXA")) {
                         caixaModel.addRow(new Object[]{colunas[1], colunas[2], colunas[3]});
+                        caixas.inserirFim(new Caixa(colunas[1], colunas[2], Integer.parseInt(colunas[3])));
                     }
                 }
             }
@@ -264,9 +275,12 @@ public class TelaCaixa extends JPanel {
                     String[] colunas = linha.split(";");
                     if (colunas.length >= 4 && colunas[0].equals("GERENTE")) {
                         gerenteModel.addRow(new Object[]{colunas[1], colunas[2], colunas[3]});
+                        gerentes.inserirFim(new GerenteNegocios(colunas[1], colunas[2], Integer.parseInt(colunas[3])));
                     }
                 }
             }
+
+            GestaoFuncionarios.resetarTabelas(caixas, gerentes);
 
         } catch (java.net.SocketTimeoutException e) {
             System.err.println("[ERRO] Timeout ao buscar funcionários - Coordenador não respondeu");
@@ -277,7 +291,7 @@ public class TelaCaixa extends JPanel {
         } catch (Exception e) {
             System.err.println("[ERRO] Erro ao buscar funcionários: " + e.getMessage());
             e.printStackTrace();
-        }
+        } 
         
         caixaTable.setModel(caixaModel);
         gerenteTable.setModel(gerenteModel);

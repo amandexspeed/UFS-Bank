@@ -23,6 +23,8 @@ public class TelaTabela extends JPanel {
     private static final long serialVersionUID = 1L;
     private static JTable caixaTable;
     private static JTable gerenteTable;
+    private static JLabel lblStats;
+    private static JPanel statsPanel;
     private JButton botaoVoltar;
 
     public TelaTabela() throws Excecao {
@@ -87,18 +89,19 @@ public class TelaTabela extends JPanel {
         tabelaPanel.add(gerenteScrollPane);
         add(tabelaPanel);
 
-        // Preenche as tabelas
-        preencherTabelas();
-
-        // === PAINEL DE ESTATÍSTICAS ===
-        JPanel statsPanel = new JPanel();
+        statsPanel = new JPanel();
         statsPanel.setBounds(400, 620, 480, 50);
         statsPanel.setBackground(Color.WHITE);
         statsPanel.setBorder(BorderFactory.createLineBorder(new Color(52, 152, 219), 2));
         statsPanel.setLayout(null);
         add(statsPanel);
 
-        JLabel lblStats = new JLabel(obterEstatisticas(), SwingConstants.CENTER);
+        // Preenche as tabelas
+        preencherTabelas();
+
+        
+
+        lblStats = new JLabel(obterEstatisticas(), SwingConstants.CENTER);
         lblStats.setFont(new Font("Arial", Font.BOLD, 16));
         lblStats.setForeground(new Color(52, 73, 94));
         lblStats.setBounds(0, 0, 480, 50);
@@ -197,12 +200,14 @@ public class TelaTabela extends JPanel {
 
         caixaTable.setModel(caixaModel);
         gerenteTable.setModel(gerenteModel);
+
+        atualizarEstatisticas();
     }
 
     /**
      * Retorna string com estatísticas dos funcionários
      */
-    private String obterEstatisticas() {
+    private static String obterEstatisticas() {
         int totalCaixas = caixaTable.getRowCount();
         int totalGerentes = gerenteTable.getRowCount();
         int total = totalCaixas + totalGerentes;
@@ -213,5 +218,17 @@ public class TelaTabela extends JPanel {
 
     public JButton getBotaoVoltar() {
         return botaoVoltar;
+    }
+
+    private static void atualizarEstatisticas() {
+        // === PAINEL DE ESTATÍSTICAS ===
+
+        JLabel lblStatsNovo = new JLabel(obterEstatisticas(), SwingConstants.CENTER);
+        lblStatsNovo.setFont(new Font("Arial", Font.BOLD, 16));
+        lblStatsNovo.setForeground(new Color(52, 73, 94));
+        lblStatsNovo.setBounds(0, 0, 480, 50);
+        statsPanel.removeAll();
+        statsPanel.add(lblStatsNovo);
+        lblStats = lblStatsNovo;
     }
 }

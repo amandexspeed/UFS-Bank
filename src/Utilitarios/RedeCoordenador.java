@@ -4,12 +4,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.JOptionPane;
+
+import Data.GerenciarArquivos.GerenciarArquivos;
 import Modelos.ModeloLista.No;
 import Modelos.ModeloLista.Fila; // ✅ AJUSTE AQUI
+import Modelos.ModeloLista.Lista;
 import Modelos.ModelosPessoa.Caixa;
 import Modelos.ModelosPessoa.Cliente;
+import Modelos.ModelosPessoa.Funcionario;
 import Modelos.ModelosPessoa.GerenteNegocios;
 import RH.GestaoFuncionarios;
 import Recepcao.GerenciarFila;
@@ -93,6 +99,22 @@ public class RedeCoordenador {
                     }
                     break;
 
+                case "ADD_FUNCIONARIO":
+                    if (partes.length >= 5) {
+                        processarCadastroFuncionario(partes, pacote.getAddress(), pacote.getPort());
+                    } else {
+                        responder("ERRO;Parametros insuficientes", pacote.getAddress(), pacote.getPort());
+                    }
+                    break;
+
+                case "REMOVE_FUNCIONARIO":
+                    if (partes.length >= 3) {
+                        processarDemissaoFuncionario(partes, pacote.getAddress(), pacote.getPort());
+                    } else {
+                        responder("ERRO;Parametros insuficientes", pacote.getAddress(), pacote.getPort());
+                    }
+                    break;
+
                 case "LISTAR_FUNCIONARIOS":
                     responder(gerarListaFuncionarios(), pacote.getAddress(), pacote.getPort());
                     break;
@@ -170,6 +192,81 @@ public class RedeCoordenador {
             throw new RuntimeException("Erro ao processar cadastro", e);
         } catch (Exception e) {
             System.err.println("[ERRO] Erro inesperado no cadastro: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void processarCadastroFuncionario(String[] p, InetAddress ip, int porta) {
+        lock.lock();
+        try {
+
+            System.out.println("[LOG] Cadastrando Funcionário: " + p[1] + 
+                             " (CPF: " + p[2] + ", Matrícula: " + p[4] + ", Tipo: " + p[3] + ")");
+
+             // Verifica duplicatas
+            List<Funcionario> funcionariosCadastrados = GerenciarArquivos.lerArquivo("caixa");
+            funcionariosCadastrados.addAll(GerenciarArquivos.lerArquivo("gerentes"));
+
+            if(p[2] == null || p[4] == null) {
+                 System.out.println("[LOG] CPF ou Matrícula não podem ser nulos.");
+                 responder("ERRO;CPF ou Matrícula não podem ser nulos", ip, porta);
+                 return;
+            }
+
+            if (funcionariosCadastrados != null) {
+                for (Funcionario func : funcionariosCadastrados) {
+                    if (func.getCPF().equals(p[2])) {
+                        System.out.println("[LOG] CPF já cadastrado. Por favor, insira um CPF diferente.");
+                        responder("ERRO;CPF já cadastrado", ip, porta);
+                        return;
+                    }
+                    if (func.getMatricula() == Integer.parseInt(p[4])) {
+                        System.out.println("[LOG] Matrícula já cadastrada. Por favor, insira uma matrícula diferente.");
+                        responder("ERRO;Matrícula já cadastrada", ip, porta);
+                        return;
+                    }
+                }
+            }
+
+            if (p[3].equalsIgnoreCase("Caixa")) {
+                Caixa caixa = new Caixa(p[1], p[2], Integer.parseInt(p[4]));
+                GerenciarArquivos.escreverArquivo(caixa, "caixa");
+                GestaoFuncionarios.ListaCaixa.inserirInicio(caixa);
+            } else {
+                GerenteNegocios gerente = new GerenteNegocios(p[1], p[2], Integer.parseInt(p[4]));
+                GerenciarArquivos.escreverArquivo(gerente, "gerentes");
+                GestaoFuncionarios.ListaGerente.inserirInicio(gerente);
+            }
+
+            responder("OK", ip, porta);
+
+        } catch (Excecao e) {
+            System.err.println("[ERRO] Falha ao inserir cliente na fila: " + e.getMessage());
+            throw new RuntimeException("Erro ao processar cadastro", e);
+        } catch (Exception e) {
+            System.err.println("[ERRO] Erro inesperado no cadastro: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    private void processarDemissaoFuncionario(String[] p, InetAddress ip, int porta) {
+        lock.lock();
+        try {
+            int matricula = Integer.parseInt(p[2]);
+            String tipo = p[1];
+            System.out.println("[LOG] Processando demissão: " + "Matrícula: " + matricula + ", Tipo: " + tipo);
+            GerenciarArquivos.removerFuncionario(tipo.equals("Caixa") ? "caixa" : "gerentes", matricula);
+            GestaoFuncionarios.iniciarLista();
+            System.out.println("[LOG] Funcionário com matrícula " + matricula + " removido do sistema.");
+            responder("OK", ip, porta);
+            
+        } catch (Exception e) {
+            System.err.println("[ERRO] Erro ao processar demissão: " + e.getMessage());
             e.printStackTrace();
         } finally {
             lock.unlock();

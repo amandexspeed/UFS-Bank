@@ -13,10 +13,15 @@ import Data.GerenciarArquivos.GerenciarArquivos;
 import Modelos.ModelosPessoa.*;
 import RH.GestaoFuncionarios;
 import Utilitarios.Excecao;
+import Utilitarios.RedeCliente;
+
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.List;
 import java.awt.event.ActionEvent;
 
@@ -203,64 +208,10 @@ public class TelaCadastro extends JPanel {
                     return;
                 }
                 
-                // Verifica duplicatas
-                List<Funcionario> funcionariosCadastrados = GerenciarArquivos.lerArquivo("caixa");
-                funcionariosCadastrados.addAll(GerenciarArquivos.lerArquivo("gerentes"));
-
-                if (funcionariosCadastrados != null) {
-                    for (Funcionario func : funcionariosCadastrados) {
-                        if (func.getCPF().equals(cpf)) {
-                            JOptionPane.showMessageDialog(null, 
-                                "CPF já cadastrado. Por favor, insira um CPF diferente.", 
-                                "Erro de Duplicação", 
-                                JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        if (func.getMatricula() == matricula) {
-                            JOptionPane.showMessageDialog(null, 
-                                "Matrícula já cadastrada. Por favor, insira uma matrícula diferente.", 
-                                "Erro de Duplicação", 
-                                JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                    }
+                boolean sucesso = enviarSolicitacaoRede(nome, cpf, escolha, matricula);
+                if (!sucesso) {
+                    return;
                 }
-
-                // Cadastra o funcionário
-                if (escolha.equals("Caixa")) {
-                    try {
-                        Caixa caixa = new Caixa(nome, cpf, matricula);
-                        GerenciarArquivos.escreverArquivo(caixa, "caixa");
-                        GestaoFuncionarios.ListaCaixa.inserirInicio(caixa);
-                        
-                        JOptionPane.showMessageDialog(null, 
-                            "Caixa " + nome + " cadastrado com sucesso!\nMatrícula: " + matricula, 
-                            "Cadastro Realizado", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                    } catch (Excecao ex) {
-                        JOptionPane.showMessageDialog(null, 
-                            "Erro ao cadastrar: " + ex.getMessage(), 
-                            "Erro", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                } else if (escolha.equals("Gerente de Negócios")) {
-                    try {
-                        GerenteNegocios gerente = new GerenteNegocios(nome, cpf, matricula);
-                        GerenciarArquivos.escreverArquivo(gerente, "gerentes");
-                        GestaoFuncionarios.ListaGerente.inserirInicio(gerente);
-                        
-                        JOptionPane.showMessageDialog(null, 
-                            "Gerente " + nome + " cadastrado com sucesso!\nMatrícula: " + matricula, 
-                            "Cadastro Realizado", 
-                            JOptionPane.INFORMATION_MESSAGE);
-                    } catch (Excecao ex) {
-                        JOptionPane.showMessageDialog(null, 
-                            "Erro ao cadastrar: " + ex.getMessage(), 
-                            "Erro", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-                
                 // Limpa os campos
                 campoNome.setText("");
                 campoCPF.setText("");
@@ -268,11 +219,10 @@ public class TelaCadastro extends JPanel {
                 comboBox.setSelectedIndex(0);
                 
                 // Atualiza as tabelas
-                GestaoFuncionarios.iniciarLista();
                 GestaoFuncionarios.atualizarTabelas();
             }
         });
-        
+
         // === BOTÃO VOLTAR ===
         botaoVoltar = new JButton("← Voltar");
         botaoVoltar.setFont(new Font("Arial", Font.BOLD, 16));
@@ -292,6 +242,59 @@ public class TelaCadastro extends JPanel {
                 botaoVoltar.setBackground(new Color(149, 165, 166));
             }
         });
+    }
+
+    private boolean enviarSolicitacaoRede(String nome, String cpf, String setor, int matricula) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setBroadcast(true);
+            socket.setSoTimeout(15000);
+            
+            String mensagem = String.format("ADD_FUNCIONARIO;%s;%s;%s;%d", nome, cpf, setor, matricula);
+            byte[] buffer = mensagem.getBytes("UTF-8");
+
+            InetAddress address = InetAddress.getByName("255.255.255.255");
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, RedeCliente.getServidorPorta());
+            
+            socket.send(packet);
+            System.out.println("[LOG] Pacote UDP enviado: " + mensagem);
+            
+            byte[] bufferReceberRespostaServidor = new byte[1024];
+            DatagramPacket pacoteReceberResposta = new DatagramPacket(bufferReceberRespostaServidor, bufferReceberRespostaServidor.length);
+            socket.receive(pacoteReceberResposta);
+
+            String respostaServidor = new String(pacoteReceberResposta.getData(), 0, pacoteReceberResposta.getLength(), "UTF-8");
+            System.out.println("[LOG] Resposta SERVIDOR: " + respostaServidor);
+
+                if (respostaServidor.startsWith("OK")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Funcionário cadastrado com sucesso!", 
+                        "Sucesso", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    return true;
+                } else if (respostaServidor.startsWith("ERRO")) {
+                    String[] partes = respostaServidor.split(";", 2);
+                    String mensagemErro = partes.length > 1 ? partes[1] : "Erro desconhecido.";
+                    JOptionPane.showMessageDialog(this, 
+                        "Erro ao cadastrar funcionário: " + mensagemErro, 
+                        "Erro", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return false;
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                        "Resposta inesperada do servidor: " + respostaServidor, 
+                        "Erro de Comunicação", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, 
+                "Erro ao conectar com o Coordenador.\nVerifique se o servidor está ativo.",
+                "Erro de Rede",
+                JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
     }
     
     public JButton getBotaoVoltar() {

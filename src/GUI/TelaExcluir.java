@@ -19,11 +19,15 @@ import Modelos.ModelosPessoa.*;
 import Modelos.ModeloLista.*;
 import RH.GestaoFuncionarios;
 import Utilitarios.Excecao;
+import Utilitarios.RedeCliente;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
@@ -214,12 +218,21 @@ public class TelaExcluir extends JPanel {
 
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
-                        GestaoFuncionarios.removerFuncionario(tipo, matricula);
-                        GestaoFuncionarios.iniciarLista();
-                        GestaoFuncionarios.atualizarTabelas();
                         
-                        // Limpa o campo
-                        campoMatricula.setText("");
+                        if(matricula <= 0) {
+                            throw new Excecao("Matrícula inválida!");
+                        }
+
+                        No funcionario = tipo.equals("Caixa") ? GestaoFuncionarios.ListaCaixa.buscar(matricula) : GestaoFuncionarios.ListaGerente.buscar(matricula);
+                        if(funcionario == null) {
+                            throw new Excecao("Funcionário não encontrado!");
+                        }
+                        
+                        boolean sucesso = enviarSolicitacaoRede(tipo, matricula);
+                        if(sucesso) {
+                            campoMatricula.setText("");
+                            GestaoFuncionarios.atualizarTabelas();
+                        }
                         
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(null,
@@ -325,4 +338,58 @@ public class TelaExcluir extends JPanel {
     public JButton getBotaoVoltar() {
         return botaoVoltar;
     }
+
+     private boolean enviarSolicitacaoRede(String setor, int matricula) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setBroadcast(true);
+            socket.setSoTimeout(30000);
+            
+            String mensagem = String.format("REMOVE_FUNCIONARIO;%s;%d", setor, matricula);
+            byte[] buffer = mensagem.getBytes("UTF-8");
+
+            InetAddress address = InetAddress.getByName("255.255.255.255");
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, RedeCliente.getServidorPorta());
+            
+            socket.send(packet);
+            System.out.println("[LOG] Pacote UDP enviado: " + mensagem);
+            
+            byte[] bufferReceberRespostaServidor = new byte[1024];
+            DatagramPacket pacoteReceberResposta = new DatagramPacket(bufferReceberRespostaServidor, bufferReceberRespostaServidor.length);
+            socket.receive(pacoteReceberResposta);
+
+            String respostaServidor = new String(pacoteReceberResposta.getData(), 0, pacoteReceberResposta.getLength(), "UTF-8");
+            System.out.println("[LOG] Resposta SERVIDOR: " + respostaServidor);
+
+                if (respostaServidor.startsWith("OK")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Funcionário removido com sucesso!", 
+                        "Sucesso", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    return true;
+                } else if (respostaServidor.startsWith("ERRO")) {
+                    String[] partes = respostaServidor.split(";", 2);
+                    String mensagemErro = partes.length > 1 ? partes[1] : "Erro desconhecido.";
+                    JOptionPane.showMessageDialog(this, 
+                        "Erro ao remover funcionário: " + mensagemErro, 
+                        "Erro", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return false;
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                        "Resposta inesperada do servidor: " + respostaServidor, 
+                        "Erro de Comunicação", 
+                        JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, 
+                "Erro ao conectar com o Coordenador.\nVerifique se o servidor está ativo.",
+                "Erro de Rede",
+                JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
+    }
+
 }

@@ -12,6 +12,7 @@ import Data.GerenciarArquivos.GerenciarArquivos;
 import GUI.ExcecaoPainel;
 import GUI.TelaCaixa;
 import GUI.TelaExcluir;
+import GUI.TelaRH;
 import GUI.TelaTabela;
 import Utilitarios.Excecao;
 
@@ -74,7 +75,6 @@ public class GestaoFuncionarios {
 
     }
 
-
     static void cadastrarFuncionario(Funcionario funcionario) {
         if (funcionario instanceof Caixa) {
             ListaCaixa.inserirInicio((Caixa)funcionario);
@@ -112,12 +112,20 @@ public class GestaoFuncionarios {
     public static void atualizarTabelas(){
 
         try {
+            TelaCaixa.preencherTabelasRemotamente();
             TelaTabela.preencherTabelas();
             TelaExcluir.preencherTabelas();
-            TelaCaixa.preencherTabelasRemotamente();
         } catch (Excecao e) {
             e.printStackTrace();
         }
 
     }
+
+    public static void resetarTabelas(Lista<Caixa> caixas, Lista<GerenteNegocios> gerentes) {
+    
+        ListaCaixa = caixas;
+        ListaGerente = gerentes;
+
+    }
+
 }

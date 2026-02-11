@@ -33,23 +33,17 @@ jobs:
 
     - name: Preparar Pacote de Entrega
       run: |
-        # Cria uma pasta temporária para organizar o ZIP
         mkdir -p pacote_ufs_bank/Data/Arquivos
         
-        # Copia os JARs gerados pelo Maven
         cp target/*-server.jar pacote_ufs_bank/
         cp target/*-client.jar pacote_ufs_bank/
         
-        # Copia o seu arquivo .bat da raiz
         cp executa_facil.bat pacote_ufs_bank/
         
-        # Copia os seus arquivos .txt necessários para o projeto
-        # Ajuste o caminho se a sua pasta de arquivos for diferente
         cp src/Data/Arquivos/*.txt pacote_ufs_bank/Data/Arquivos/
-        
-        # Opcional: Criar um .env de exemplo vazio para eles preencherem
-        echo "DB_HOST=\nDB_PORT=\nDB_NAME=\nDB_USER=\nDB_PASSWORD=" > pacote_ufs_bank/.env.example
 
+        echo "DB_HOST=\nDB_PORT=\nDB_NAME=\nDB_USER=\nDB_PASSWORD=" > pacote_ufs_bank/.env.example
+        
         zip -r ufs_bank_completo.zip pacote_ufs_bank/
 
     - name: Criar Release com ZIP Único

@@ -50,21 +50,23 @@ jobs:
         # Opcional: Criar um .env de exemplo vazio para eles preencherem
         echo "DB_HOST=\nDB_PORT=\nDB_NAME=\nDB_USER=\nDB_PASSWORD=" > pacote_ufs_bank/.env.example
 
-    - name: Criar Release e Upload do ZIP Completo
+        zip -r ufs_bank_completo.zip pacote_ufs_bank/
+
+    - name: Criar Release com ZIP Único
       uses: softprops/action-gh-release@v1
       if: github.ref == 'refs/heads/main'
       with:
-        tag_name: v${{ github.run_number }}
-        name: Release v${{ github.run_number }}
-        files: |
-          pacote_ufs_bank/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          # Aqui enviamos apenas o ZIP, para vir tudo organizadinho
+          files: ufs_bank_completo.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Upload Artifact (Para teste rápido na aba Actions)
       uses: actions/upload-artifact@v4
       with:
-        name: UFS-Bank-Pacote-Completo
-        path: pacote_ufs_bank/
+        name: UFS-Bank-ZIP-Teste
+        path: ufs_bank_completo.zip
 
    

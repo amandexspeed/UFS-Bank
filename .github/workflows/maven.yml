@@ -41,7 +41,7 @@ jobs:
         cp target/*-client.jar pacote_ufs_bank/
         
         # Copia o seu arquivo .bat da raiz
-        cp jogar_ufs_bank.bat pacote_ufs_bank/
+        cp executa_facil.bat pacote_ufs_bank/
         
         # Copia os seus arquivos .txt necessários para o projeto
         # Ajuste o caminho se a sua pasta de arquivos for diferente

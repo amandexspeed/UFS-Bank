@@ -31,19 +31,24 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: mvn -B package --file pom.xml
 
-    - name: Preparar Pacote de Entrega
+    - name: Preparar Estrutura e Criar ZIP
       run: |
-        mkdir -p pacote_ufs_bank/Data/Arquivos
+        # 1. Cria a estrutura exata que o Java espera
+        mkdir -p pacote_ufs_bank/src/Data/Arquivos
         
-        cp target/*-server.jar pacote_ufs_bank/
-        cp target/*-client.jar pacote_ufs_bank/
+        # 2. Copia os JARs gerados pelo Maven
+        cp target/*.jar pacote_ufs_bank/
         
+        # 3. Copia o seu arquivo .bat atualizado
         cp executa_facil.bat pacote_ufs_bank/
         
-        cp src/Data/Arquivos/*.txt pacote_ufs_bank/Data/Arquivos/
-
+        # 4. Copia os arquivos .txt para a pasta interna
+        cp src/Data/Arquivos/*.txt pacote_ufs_bank/src/Data/Arquivos/
+        
+        # 5. Cria um arquivo de exemplo para as credenciais
         echo "DB_HOST=\nDB_PORT=\nDB_NAME=\nDB_USER=\nDB_PASSWORD=" > pacote_ufs_bank/.env.example
         
+        # 6. Gera o ZIP (O comando precisa estar aqui dentro do 'run')
         zip -r ufs_bank_completo.zip pacote_ufs_bank/
 
     - name: Criar Release com ZIP Único

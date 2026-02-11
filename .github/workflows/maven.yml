@@ -37,7 +37,8 @@ jobs:
         mkdir -p pacote_ufs_bank/src/Data/Arquivos
         
         # 2. Copia os JARs gerados pelo Maven
-        cp target/*.jar pacote_ufs_bank/
+        cp target/*-server.jar pacote_ufs_bank/
+        cp target/*-client.jar pacote_ufs_bank/
         
         # 3. Copia o seu arquivo .bat atualizado
         cp executa_facil.bat pacote_ufs_bank/

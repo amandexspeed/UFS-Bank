@@ -59,7 +59,7 @@ jobs:
           name: Release v${{ github.run_number }}
           # Aqui enviamos apenas o ZIP, para vir tudo organizadinho
           files: ufs_bank_completo.zip
-        env:
+      env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Upload Artifact (Para teste rápido na aba Actions)
